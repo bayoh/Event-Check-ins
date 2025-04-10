@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
     if (!assignment) {
       return NextResponse.json(
-        { error: 'Attendee is not assigned to this room' },
+        { message: 'Attendee is not assigned to this room' },
         { status: 403 }
       )
     }
