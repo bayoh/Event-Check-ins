@@ -23,7 +23,7 @@ export async function GET() {
         include: {
           attendee: {
             select: {
-              name: true
+              firstName: true
             }
           },
           room: {
