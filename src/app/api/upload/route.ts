@@ -21,15 +21,16 @@ export async function POST(req: Request) {
     }
 
     const buffer = await file.arrayBuffer()
+    const csvBuffer = Buffer.from(buffer)
     let attendees: { firstName: string; lastName: string; email: string; category: string, publicID: string }[] = []
 
     if (file.name.endsWith('.csv')) {
-      const records = await new Promise((resolve, reject) => {
-        const parser = parse(buffer, {
+      const records = await new Promise<Array<Record<string, string>>>((resolve, reject) => {
+        const parser = parse(csvBuffer, {
           columns: true,
           skip_empty_lines: true,
         })
-        const records: any[] = []
+        const records: Array<Record<string, string>> = []
         parser.on('readable', function () {
           let record
           while ((record = parser.read())) {
