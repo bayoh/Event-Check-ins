@@ -95,7 +95,7 @@ export default function Home() {
             </div>
             <div>
               <Text fw={500} size="sm" c="dimmed">Active Rooms</Text>
-              <Text fw={700} size="xl">{stats?.activeRooms.length || 0}</Text>
+              <Text fw={700} size="xl">{stats?.activeRooms || 0}</Text>
             </div>
           </Group>
         </Card>
@@ -107,7 +107,7 @@ export default function Home() {
             </div>
             <div>
               <Text fw={500} size="sm" c="dimmed">Check-ins Today</Text>
-              <Text fw={700} size="xl">{stats?.checkInsToday.length || 0}</Text>
+              <Text fw={700} size="xl">{stats?.checkInsToday || 0}</Text>
             </div>
           </Group>
         </Card>
