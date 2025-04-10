@@ -1,47 +1,45 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 export async function GET() {
   try {
-    // Get total attendees count
-    const totalAttendees = await prisma.attendee.findMany()
-    console.log(totalAttendees.length)
-    // Get active rooms count
-    const activeRooms = await prisma.room.findMany()
-    console.log(activeRooms)
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-    // Get today's check-ins count
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const checkInsToday = await prisma.checkIn.findMany({
-      where: {
-        checkedInAt: {
-          gte: today,
-          lt: tomorrow
-        }
-      }
-    })
-
-    console.log(checkInsToday)
-
-    // Get recent check-ins with attendee and room details
-    const recentCheckIns = await prisma.checkIn.findMany({
-      include: {
-        attendee: {
-          select: {
-            firstName: true
+    const [totalAttendees, activeRooms, checkInsToday, recentCheckIns] = await Promise.all([
+      prisma.attendee.findMany(),
+      prisma.room.count(),
+      prisma.checkIn.count({
+        where: {
+          checkedInAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)),
+            lt: new Date(new Date().setHours(23, 59, 59, 999))
           }
+        }
+      }),
+      prisma.checkIn.findMany({
+        take: 5,
+        orderBy: {
+          checkedInAt: 'desc'
         },
-        room: {
-          select: {
-            name: true
+        include: {
+          attendee: {
+            select: {
+              name: true
+            }
+          },
+          room: {
+            select: {
+              name: true
+            }
           }
         }
-      }
-    })
-    console.log(recentCheckIns)
+      })
+    ])
 
     return NextResponse.json({
       totalAttendees,
@@ -50,8 +48,7 @@ export async function GET() {
       recentCheckIns
     })
   } catch (error) {
-    console.log(error)
-    console.error('Error fetching dashboard data:', error)
+    console.error('Dashboard error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch dashboard data' },
       { status: 500 }
